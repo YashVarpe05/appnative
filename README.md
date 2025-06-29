@@ -82,3 +82,15 @@ Learn more about the power of Turborepo:
 - [Filtering](https://turborepo.com/docs/crafting-your-repository/running-tasks#using-filters)
 - [Configuration Options](https://turborepo.com/docs/reference/configuration)
 - [CLI Usage](https://turborepo.com/docs/reference/command-line-reference)
+
+<!-- command to run  -->
+
+yashv@Yashpc MINGW64 /d/Projects/appnative/packages/db (main)//all this commnad run on this path 
+for db postgresh
+-- $ docker ps //check the docker which db is on
+
+-- docker run -d -e POSTGRES_PASSWORD=yash2005
+-p 5432:5432 postgres // to run the postgres
+
+$ bunx prisma migrate dev //to migrate the db
+$ docker run -d  -p 6379:6379 redis // to run the redis

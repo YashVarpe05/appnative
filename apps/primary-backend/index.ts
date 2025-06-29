@@ -5,19 +5,21 @@ import cors from "cors";
 import { authMiddleware } from "./middleware";
 // Extend Express Request to include userId
 declare global {
-  namespace Express {
-    interface Request {
-      userId?: string;
-    }
-  }
+	namespace Express {
+		interface Request {
+			userId?: string;
+		}
+	}
 }
 
 const app = express();
 // Configure CORS for frontend
-app.use(cors({
-  origin: 'http://localhost:3000',
-  credentials: true,
-}));
+app.use(
+	cors({
+		origin: "http://localhost:3000",
+		credentials: true,
+	})
+);
 // Body parser
 app.use(express.json());
 
@@ -40,45 +42,45 @@ app.get("/projects", authMiddleware, async (req, res) => {
 	res.json({ projects });
 });
 
-const allowedOrigin = "http://localhost:3000";
+const allowedOrigin = "http://localhost:3002";
 
 const server = Bun.serve({
-  port: 8080,
-  fetch(req) {
-    // Handle preflight OPTIONS request
-    if (req.method === "OPTIONS") {
-      return new Response(null, {
-        status: 204,
-        headers: {
-          "Access-Control-Allow-Origin": allowedOrigin,
-          "Access-Control-Allow-Methods": "GET,POST,PUT,DELETE,OPTIONS",
-          "Access-Control-Allow-Headers": "Content-Type, Authorization",
-          "Access-Control-Allow-Credentials": "true",
-        },
-      });
-    }
+	port: 8081,
+	fetch(req) {
+		// Handle preflight OPTIONS request
+		if (req.method === "OPTIONS") {
+			return new Response(null, {
+				status: 204,
+				headers: {
+					"Access-Control-Allow-Origin": allowedOrigin,
+					"Access-Control-Allow-Methods": "GET,POST,PUT,DELETE,OPTIONS",
+					"Access-Control-Allow-Headers": "Content-Type, Authorization",
+					"Access-Control-Allow-Credentials": "true",
+				},
+			});
+		}
 
-    // ... your existing logic for other methods ...
-    // For example:
-    if (req.method === "POST" && new URL(req.url).pathname === "/project") {
-      // your POST logic here
-      return new Response("OK", {
-        headers: {
-          "Access-Control-Allow-Origin": allowedOrigin,
-          "Access-Control-Allow-Credentials": "true",
-        },
-      });
-    }
+		// ... your existing logic for other methods ...
+		// For example:
+		if (req.method === "POST" && new URL(req.url).pathname === "/project") {
+			// your POST logic here
+			return new Response("OK", {
+				headers: {
+					"Access-Control-Allow-Origin": allowedOrigin,
+					"Access-Control-Allow-Credentials": "true",
+				},
+			});
+		}
 
-    // Default response
-    return new Response("Not found", {
-      status: 404,
-      headers: {
-        "Access-Control-Allow-Origin": allowedOrigin,
-        "Access-Control-Allow-Credentials": "true",
-      },
-    });
-  },
+		// Default response
+		return new Response("Not found", {
+			status: 404,
+			headers: {
+				"Access-Control-Allow-Origin": allowedOrigin,
+				"Access-Control-Allow-Credentials": "true",
+			},
+		});
+	},
 });
 
 console.log("Server is running on port 8080");
