@@ -27,18 +27,18 @@ export default function RootLayout({
 }) {
 	return (
 		<html lang="en" className="dark">
-			<SidebarProvider>
-				<AppSidebar />
-				<ClerkProvider>
-					<body
-						className={`${geistSans.variable} ${geistMono.variable} antialiased bg-black text-white items-center`}
-						suppressHydrationWarning={true}
-					>
-						<SidebarTrigger />
+			<ClerkProvider>
+				<body
+					className={`${geistSans.variable} ${geistMono.variable} antialiased bg-black text-white items-center`}
+					suppressHydrationWarning={true}
+				>
+					<SidebarProvider>
+						<AppSidebar />
+						<SidebarTrigger className="fixed top-4 left-4 z-50 md:hidden" />
 						{children}
-					</body>
-				</ClerkProvider>
-			</SidebarProvider>
+					</SidebarProvider>
+				</body>
+			</ClerkProvider>
 		</html>
 	);
 }
