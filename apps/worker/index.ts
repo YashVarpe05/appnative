@@ -1,0 +1,73 @@
+// import { prismaClient } from "./../../packages/db/index";
+import cors from "cors";
+import express from "express";
+import { prismaClient } from "db/client";
+import Anthropic from "@anthropic-ai/sdk";
+import { systemPrompt } from "./system-prompt";
+import { ArtifactProcessor } from "./parser";
+import { onFileUpdate, onShellCommand } from "./os";
+
+const app = express();
+app.use(cors());
+app.use(express.json());
+
+app.post("/project", async (req, res) => {
+	const { prompt, projectId } = req.body;
+	const client = new Anthropic();
+	await prismaClient.prompt.create({
+		data: {
+			content: prompt,
+			projectId,
+			type: "USER",
+		},
+	});
+	const allPrompts = await prismaClient.prompt.findmany({
+		where: {
+			projectId,
+		},
+		orderBy: {
+			createdAt: "asc",
+		},
+	});
+
+	let artifactProcessor = new ArtifactProcessor(
+		"",
+		onFileUpdate,
+		onShellCommand
+	);
+	let artifact = "";
+
+	let response = client.messages
+		.stream({
+			messages: allPrompts.map((p: any) => ({
+				role: p.type === "USER" ? "user" : "assistant",
+				content: p.content,
+			})),
+			system: systemPrompt,
+			model: "claude-3-7-sonnet-20250219",
+			max_tokens: 8000,
+		})
+		.on("text", (text) => {
+			artifactProcessor.append(text);
+			artifactProcessor.parse();
+			artifact += text;
+		})
+		.on("finalMessage", async (message) => {
+			console.log("Done!");
+			await prismaClient.prompt.create({
+				data: {
+					content: artifact,
+					projectId,
+					type: "SYSTEM",
+				},
+			});
+		})
+		.on("error", (error) => {
+			console.error("Error in response stream:", error);
+		});
+	res.json({ response });
+});
+
+app.listen(9091, () => {
+	console.log("Server is running on port 9091");
+});

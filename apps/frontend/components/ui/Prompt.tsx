@@ -40,24 +40,31 @@ export function Prompt() {
 	};
 
 	return (
-		<div className="w-full bg-gray-900 rounded-lg border border-gray-800 p-4">
+		<div>
 			<Textarea
-				placeholder="Enter what you want to build, e.g., 'A chess app with multiplayer support'..."
+				placeholder="Enter chess application..."
 				value={prompt}
 				onChange={(e) => setPrompt(e.target.value)}
-				className="min-h-[100px] bg-transparent border-gray-800 focus:border-blue-600 text-white placeholder:text-gray-500"
 			/>
-			<div className="flex justify-between items-center pt-3">
-				<div className="text-xs text-gray-500 flex items-center">
-					<Sparkle size={14} className="mr-1" /> Powered by AI
-				</div>
+			<div className="flex justify-end pt-2">
 				<Button
-					onClick={handleSubmit}
-					disabled={loading || !prompt.trim()}
-					className="bg-blue-600 hover:bg-blue-700 text-white rounded-full px-5 transition-all"
+					onClick={async () => {
+						const token = await getToken();
+						const response = await axios.post(
+							`${BACKEND_URL}/project`,
+							{
+								prompt: prompt,
+							},
+							{
+								headers: {
+									Authorization: `Bearer ${token}`,
+								},
+							}
+						);
+						console.log(response.data);
+					}}
 				>
-					{loading ? "Generating..." : "Generate"}
-					{!loading && <Send size={16} className="ml-2" />}
+					<Send />
 				</Button>
 			</div>
 		</div>

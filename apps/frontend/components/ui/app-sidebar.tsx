@@ -34,41 +34,62 @@ type Project = {
 function useProjects() {
 	const { getToken } = useAuth();
 	const [projects, setProjects] = useState<{ [date: string]: Project[] }>({});
+	const [loading, setLoading] = useState(true);
+	const [error, setError] = useState<string | null>(null);
 
 	useEffect(() => {
 		(async () => {
-			const token = await getToken();
-			if (!token) return;
-			const response = await axios.get(`${BACKEND_URL}/projects`, {
-				headers: {
-					Authorization: `Bearer ${token}`,
-				},
-			});
-			const projectsByDate = response.data.projects.reduce(
-				(acc: { [date: string]: Project[] }, project: Project) => {
-					const date = new Date(project.createdAt).toLocaleDateString("en-US", {
-						year: "numeric",
-						month: "long",
-						day: "numeric",
-					});
-					if (!acc[date]) {
-						acc[date] = [];
-					}
-					acc[date].push(project);
-					return acc;
-				},
-				{}
-			);
-			setProjects(projectsByDate);
+			try {
+				const token = await getToken();
+				if (!token) {
+					setLoading(false);
+					return;
+				}
+
+				const response = await axios.get(`${BACKEND_URL}/projects`, {
+					headers: {
+						Authorization: `Bearer ${token}`,
+					},
+				});
+
+				const projectsByDate = response.data.projects.reduce(
+					(acc: { [date: string]: Project[] }, project: Project) => {
+						const date = new Date(project.createdAt).toLocaleDateString(
+							"en-US",
+							{
+								year: "numeric",
+								month: "long",
+								day: "numeric",
+							}
+						);
+						if (!acc[date]) {
+							acc[date] = [];
+						}
+						acc[date].push(project);
+						return acc;
+					},
+					{}
+				);
+				setProjects(projectsByDate);
+				setError(null);
+			} catch (err: unknown) {
+				console.error("Failed to fetch projects:", err);
+				setError(
+					err instanceof Error ? err.message : "Failed to fetch projects"
+				);
+				setProjects({});
+			} finally {
+				setLoading(false);
+			}
 		})();
 	}, [getToken]);
 
-	return projects;
+	return { projects, loading, error };
 }
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 	const [searchString, setSearchString] = useState("");
-	const projects = useProjects();
+	const { projects, loading, error } = useProjects();
 
 	return (
 		<Sidebar {...props}>
@@ -94,12 +115,28 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 				<SidebarGroup>
 					<SidebarGroupContent>
 						<SidebarMenu>
-							{Object.keys(projects).length === 0 ? (
-								<div className="flex items-center justify-center">
+							{loading ? (
+								<div className="flex items-center justify-center p-4">
+									<p className="text-sm text-gray-400">Loading projects...</p>
+								</div>
+							) : error ? (
+								<div className="flex flex-col items-center justify-center p-4 space-y-2">
+									<div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar text-red-400">
+										<GalleryVerticalEnd className="size-4" />
+									</div>
+									<p className="text-sm text-red-400 text-center">
+										Failed to load projects
+									</p>
+									<p className="text-xs text-gray-500 text-center">
+										Make sure the backend is running
+									</p>
+								</div>
+							) : Object.keys(projects).length === 0 ? (
+								<div className="flex flex-col items-center justify-center p-4 space-y-2">
 									<div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar text-teal-400">
 										<GalleryVerticalEnd className="size-4" />
 									</div>
-									<p className="font-semibold text-center text-teal-400">
+									<p className="text-sm text-teal-400 text-center">
 										No projects found
 									</p>
 								</div>
@@ -113,7 +150,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 										<SidebarMenuItem key={index}>
 											<SidebarGroupLabel>{date}</SidebarGroupLabel>
 											{projects[date]
-												.filter((project) =>
+												.filter((project: Project) =>
 													project.description
 														.toLowerCase()
 														.includes(searchString.toLowerCase())
@@ -123,7 +160,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 														new Date(b.createdAt).getTime() -
 														new Date(a.createdAt).getTime()
 												)
-												.map((project) => (
+												.map((project: Project) => (
 													<SidebarMenuButton
 														asChild
 														key={project.id}

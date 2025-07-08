@@ -36,4 +36,10 @@ model Prompt {
   updateAt    DateTime @updatedAt
   projectId   String
   project     Project  @relation(fields: [projectId], references: [id])
-  }
+  type        PromptType
+}
+  
+enum PromptType {
+  USER
+  SYSTEM
+}  
