@@ -3,7 +3,7 @@ import cors from "cors";
 import express from "express";
 import { prismaClient } from "db/client";
 import Anthropic from "@anthropic-ai/sdk";
-import { systemPrompt } from "./system-prompt";
+import { systemPrompt } from "./systemPrompt";
 import { ArtifactProcessor } from "./parser";
 import { onFileUpdate, onShellCommand } from "./os";
 
