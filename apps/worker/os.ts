@@ -7,16 +7,17 @@ if (!Bun.file(BASE_WORKER_DIR).exists()) {
 export async function onFileUpdate(filePath: string, fileContent: string) {
 	await Bun.write(`${BASE_WORKER_DIR}/${filePath}`, fileContent);
 }
-export async function onShellCommand(shellCommand: string) {
+export function onShellCommand(shellCommand: string) {
 	const commands = shellCommand.split("&&");
 	for (const command of commands) {
 		console.log(`Running command: ${command}`);
 
-		const result = await Bun.spawnSync({
+		const result = Bun.spawnSync({
 			cmd: command.split(" "),
 			cwd: BASE_WORKER_DIR,
 		});
 		console.log(result.stdout);
-		// console.log(result.stderr.toString());
+
+		console.log(result.stderr.toString());
 	}
 }

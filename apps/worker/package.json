@@ -9,11 +9,11 @@
 		"typescript": "^5.0.0"
 	},
 	"dependencies": {
-		"@anthropic-ai/sdk": "^0.38.0",
+		"@google/generative-ai": "^0.24.1",
 		"@types/express": "^5.0.0",
+		"common": "*",
 		"cors": "^2.8.5",
-		"express": "^4.21.2",
-		"common": "*"
+		"express": "^4.21.2"
 	},
 	"scripts": {
 		"dev": "bun --watch index.ts",

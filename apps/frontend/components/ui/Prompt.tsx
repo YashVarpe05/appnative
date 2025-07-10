@@ -7,12 +7,15 @@ import axios from "axios";
 import { useState } from "react";
 import { useAuth } from "@clerk/nextjs";
 import { BACKEND_URL } from "@/config";
+import { useRouter } from "next/navigation";
+// import { Router } from "next/router";
 
 export function Prompt() {
 	const [prompt, setPrompt] = useState("");
 	const [loading, setLoading] = useState(false);
 	const { getToken } = useAuth();
 
+	const router = useRouter();
 	const handleSubmit = async () => {
 		if (!prompt.trim()) return;
 
@@ -61,7 +64,8 @@ export function Prompt() {
 								},
 							}
 						);
-						console.log(response.data);
+						console.log(response.data.projectId);
+						Router.push(`/project/${response.data.projectId}`);
 					}}
 				>
 					<Send />
